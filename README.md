@@ -10,7 +10,7 @@ section of the Signal K documentation may provide helpful orientation.
 ## Principle of operation
 
 __signalk-notification-injector__ parses messages received on a named pipe
-(FIFO) into keys in the host server's vessels.self.notifications tree.
+(FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
 
 Messages arriving on the FIFO can come from any process which is able to
 write an appropriately formatted text message to the associated host system
