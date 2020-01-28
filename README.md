@@ -1,46 +1,56 @@
 # signalk-notification-injector
 
-[Signal K Node server](https://github.com/SignalK/signalk-server-node)
-plugin which injects arbitrary notifications into the host alert tree.
+Insert arbitrary keys into a Signal K notification tree.
 
-The plugin was developed as part of an SMS-based remote control system but may
-have more general usefulness.  In my Signal K installation I pass the plugin
-messages received from my ship's SMS interface and this allows me to remotely
-control my heating by the simple expedient of sending "heating on" and
-"heating off" messages to the vessel's GSM connection.
+This project implements a plugin for the [Signal K Node server](https://github.com/SignalK/signalk-server-node).
+
+Reading the [Alarm, alert and notification handling](http://signalk.org/specification/1.0.0/doc/notifications.html)
+section of the Signal K documentation may provide helpful orientation.
 
 ## Principle of operation
 
-__signalk-notification-injector__ listens on a named pipe (FIFO) for
-single-line text messages and attempts to use these messages to manage alarms
-in the Signal K notification tree.
+__signalk-notification-injector__ parses messages received on a named pipe
+(FIFO) into keys in the host server's vessels.self.notifications tree.
 
-Messages must conform to the following pattern (those that do not will be
-silently ignored):
+Messages arriving on the FIFO can come from any process which is able to
+write an appropriately formatted text message to the associated host system
+filename and there are no restriction in Signal K on how notification keys
+can be accessed or used by other plugins.
+
+On my vessel, I use __signalk-notification-injector__ as part of an SMS based
+remote control system.  For example, if I send the text "heating on" to my
+ship's GSM number the plugin inserts the key vessels.self.notifications.sms.heating
+into the server state.  The presence of this key is detected by my control
+system which responds by switching on the ship's central heating system.
+
+## Message format ##
+
+Messages written to the FIFO must conform to the following pattern (those that
+do not will be silently ignored):
 
 ```
-_password_:_notification_ {{__on__|_duration_}[:_description_]|__off__}
+_password_:_key_ {{__on__|_duration_}[:_description_]|__off__}
 ```
 
 _password_ is a plaintext token which will be checked against a collection of
 allowed tokens defined in the plugin configuration.  In my SMS control system
-_password_ is simply the SMS caller-id which is prepended to received text
-messages by the SMS receiver script.
+_password_ is set by the SMS receiver to the originating caller-id: in this
+way, only SMS messages from authorised callers are accepted.
 
-_notification_ is a plaintext token (optionally prepended by a path) which
-names the notification which will be inserted into the Signal K data store.
-If _notification_ does not include a path component then the default
-notification path defined in the plugin configuration will be prepended
-before further processing.
+_key_ is the notification key which should be inserted into the server's
+notification tree.  If _key_ includes a path, then the value of _key_ will be
+used as-is; if _key_ is simply a token, then any default notification path
+defined in the plugin configuration will be prepended (and that is how my
+"heating on" message results in a key under notifications.sms).
 
-__on__ says insert the notification.
+__on__ says create _key_.
 
-__off__ says delete the notification.
+__off__ says delete _key_.
 
-_duration_ says insert the notification and automatically delete it after
-the specified time.  _duration_ must be an integer value optionally suffixed
-by 's', 'm' or 'h', for seconds, minutes and hours (if no suffix is supplied
-then 'm' is assumed).
+_duration_ says create _key_, but automatically delete it after a specifieds
+ time.  _duration_ must be an integer value and is taken to specify a number
+of minutes (optionally _duration_ can be suffixed by 's', 'm' or 'h' to
+explicitly specify seconds, minutes and hours).
 
 _description_ is arbitrary text which will be used as the descriptive contents
 of new notifications.
