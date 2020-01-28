@@ -11,12 +11,11 @@ section of the Signal K documentation may provide helpful orientation.
 
 __signalk-notification-injector__ parses messages received on a named pipe
 (FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
+Any process which is able to write an appropriately formatted text message
+to the named pipe has access to the injection process.
 
-Messages can come from any process which is able to write an appropriately
-formatted text message to the system filename associated with FIFO.
-
-Signal K places no arbitrary restrictions on notification keys or their
-semantics and other Signal K processes can interpret and use notification key
+Signal K places no arbitrary restrictions on the semantics or processing of
+notification keys and Signal K processes can interpret and use notification key
 values as they see fit. 
 
 On my vessel, I use __signalk-notification-injector__ as part of an SMS based
