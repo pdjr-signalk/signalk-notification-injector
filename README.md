@@ -12,16 +12,20 @@ section of the Signal K documentation may provide helpful orientation.
 __signalk-notification-injector__ parses messages received on a named pipe
 (FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
 
-Messages arriving on the FIFO can come from any process which is able to
-write an appropriately formatted text message to the associated host system
-filename and there are no restriction in Signal K on how notification keys
-can be accessed or used by other plugins.
+Messages can come from any process which is able to write an appropriately
+formatted text message to the system filename associated with FIFO.
+
+Signal K places no arbitrary restrictions on notification keys or their
+semantics and other Signal K processes can interpret and use notification key
+values as they see fit. 
 
 On my vessel, I use __signalk-notification-injector__ as part of an SMS based
-remote control system.  For example, if I send the text "heating on" to my
-ship's GSM number the plugin inserts the key vessels.self.notifications.sms.heating
-into the server state.  The presence of this key is detected by my control
-system which responds by switching on the ship's central heating system.
+remote control system in which the presence or absence of a particular key or
+keys is used to influence virtual or real-world systems.  For example, if I
+send the text "heating on" to my ship's GSM number the plugin inserts the key
+```vessels.self.notifications.sms.heating``` into the server state.  The
+presence of this key is detected by my control system which responds by
+switching on the ship's central heating system.
 
 ## Message format ##
 
