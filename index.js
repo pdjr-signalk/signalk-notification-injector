@@ -58,7 +58,7 @@ module.exports = function(app) {
                 fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
                     log.N("Listening on " + options.fifo);
                     let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
-                    stream.on('data', d => processMessage(String(d).trim(), options.passwords.trim().split(" "), options.defaultpath));
+                    stream.on('data', d => processMessage(String(d).trim(), options));
                 });
             } else {
                 log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
@@ -78,18 +78,20 @@ module.exports = function(app) {
      * Parses a message of the form "password:text {on|off}" and if password is a member
      * of the passwords array then 
      */
-    function processMessage(message, passwords, defaultpath) {
-        if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(passwords) + "," + defaultpath + ")...", false);
+    function processMessage(message, options) {
+        if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(options) + ")...", false);
         let parts  = message.split(":");
-        let password = (parts.length > 0)?parts[0]:null;
-        let key = (parts.length > 1)?parts[1]:null;
-        let description = (parts.length > 2)?parts[2]:"";
+        let password = (parts.length > 0)?parts[0].trim():null;
+        let key = (parts.length > 1)?parts[1].trim():null;
+        let description = ((parts.length > 2)?parts[2]:"").trim();
+        let state = ((parts.length > 3)?parts[3]:options.defaultstate).trim();
+        let method = ((parts.length > 4)?parts[4]:options.defaultmethod).trim().split(" ");
         if ((password != null) && (key != null)) {
-            if (passwords.includes(password.trim())) {
+            if (options.passwords.split(" ").includes(password)) {
                 if (key.match(/ on$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-3), defaultpath)) !== null) issueNotification(key, description);
+                    if ((key = getCanonicalKey(key.slice(0,-3), options.defaultpath)) !== null) issueNotification(key, description, state, method);
                 } else if (key.match(/ off$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-4), defaultpath)) !== null) cancelNotification(key);
+                    if ((key = getCanonicalKey(key.slice(0,-4), options.defaultpath)) !== null) cancelNotification(key);
                 } else {
                     log.N("ignoring malformed request");
                 }
@@ -101,13 +103,16 @@ module.exports = function(app) {
         }
     }
 
-    function getCanonicalKey(key, defaultpath = "notifications.") {
+    function getCanonicalKey(key, defaultpath) {
         if (DEBUG) log.N("getCanonicalKey(" + key + "," + defaultpath + ")...", false);
         var retval = null;
-        if ((key) && (defaultpath)) {
-            while (key.charAt[0] == '.') key = key.slice(1);
-            while (key.charAt[key.length - 1] == '.') key = key.slice(0,-1);
-            if (key.length > 0) retval = defaultpath + "." + key;
+        if (key) {
+            if (defaultpath.match(/^notifications\.*/)) {
+                defaultpath += ((defaultpath.charAt(defaultpath.length - 1) != '.')?".":"");
+                while (key.charAt[0] == '.') key = key.slice(1);
+                while (key.charAt[key.length - 1] == '.') key = key.slice(0,-1);
+                if (key.length > 0) retval = defaultpath + key;
+            }
         }
         return(retval);
     }
@@ -119,10 +124,10 @@ module.exports = function(app) {
         return;
     }
 
-	function issueNotification(key, message) {
+	function issueNotification(key, message, state, method) {
         if (DEBUG) log.N("issueNotification(" + key + "," + message + ")...", false);
 		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
-        delta.updates[0].values[0].value = { "state": "alert", "message": message, "method": "visual", "timestamp": (new Date()).toISOString() };
+        delta.updates[0].values[0].value = { "state": state, "message": message, "method": method, "timestamp": (new Date()).toISOString() };
 		app.handleMessage(plugin.id, delta);
         return;
 	}

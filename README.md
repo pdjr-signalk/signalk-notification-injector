@@ -11,12 +11,24 @@ section of the Signal K documentation may provide helpful orientation.
 
 __signalk-notification-injector__ parses messages received on a named pipe
 (FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
-Any process which is able to write an appropriately formatted text message
-to the named pipe has access to the injection process.
 
+Messages written to the FIFO consist of single lines of text and must conform
+to some simple formatting and security rules or they will be silently ignored.
+
+Any process which is able to write to the named pipe has access to the
+injection process.  
 Signal K places no arbitrary restrictions on the semantics or processing of
 notification keys and Signal K processes can interpret and use notification key
 values as they see fit. 
+
+
+
+
+
+
+
+
+
 
 On my vessel, I use __signalk-notification-injector__ as part of an SMS based
 remote control system in which the presence or absence of a particular key or
@@ -66,9 +78,9 @@ The plugin can also be obtained from the
 [project homepage](https://github.com/preeve9534/signalk-notification-injector)
 and installed using
 [these instructions](https://github.com/SignalK/signalk-server-node/blob/master/SERVERPLUGINS.md).
-## Usage
+## Configuration
 
-__signalk-notification-injector__ is confugured through the Signal K
+__signalk-notification-injector__ is configured through the Signal K
 Node server plugin configuration interface.
 Navigate to _Server->Plugin config_ and select the _Notification injector_ tab.
 
@@ -80,7 +92,7 @@ amending the configuration options discussed below.
 Changes you make will only be saved and applied when you finally click the
 _Submit_ button.
 
-The plugin configuration pane has just three entries:
+The plugin configuration pane has the following entries.
 
 ### FIFO path
 
@@ -105,3 +117,75 @@ with "notifications.".
 
 The default value is "notifications.injector." which means that simple
 keys will be placed under the path ```vessels.self.notifications.injector.```. 
+
+### Default notification state
+
+Defines the value to be used for the notification state field if no value
+is specified in a message.
+
+The default value is 'alert'.
+
+### Default notification methods
+
+Defines the values to be used for the notification methods field if no values
+are specified in a message.
+
+The default value is "visual sound".
+## Usage
+
+Once __signalk-notification-injector__ is configured, you can inject a key
+into the Signal K notification tree by simply writing a line of text to
+the FIFO.  If configuration defaults are used, then:
+```
+$> echo "letmein:test on:This is a remotely injected test notification" > /var/signalk-injector
+```
+will insert the key ```notifications.injected.test```.
+
+The notification can be cancelled by:
+```
+$> echo "letmein:test off" > /var/signalk-injector
+```
+Note that is Signal K world, cancelling a notification does not necessarily
+result in removal of the associated key, but it does set the key value to
+null.
+
+Each line of text presented to the FIFO will be parsed into a notification
+as long as it conforms to some simple formatting rules and will otherwise be
+silently ignored.  It is convenient to think of each text line as a message,
+and the rules of message formatting are described below.
+
+## Message format
+
+Messages written to the FIFO must conform to the following pattern (those that
+do not will be silently ignored):
+
+_password_:_key_ {{__on__|_duration_}[:_description_][:_state_][:_methods_]|__off__}
+
+_password_ is a plaintext token which will be checked against a collection of
+allowed tokens defined in the plugin configuration.  In my SMS control system
+_password_ is set by the SMS receiver to the originating caller-id: in this
+way, only SMS messages from authorised callers are accepted.
+
+_key_ is the key which should be inserted into the server's notification tree.
+If _key_ includes a path, then the value of _key_ will be used as-is; if _key_
+is simply a token, then the default notification path defined in the plugin
+configuration will be prepended.
+
+__on__ says create _key_.
+
+__off__ says delete _key_ value.
+
+_duration_ says create _key_, but automatically delete it after a specified
+ time.  _duration_ must be an integer value and is taken to specify a number
+of minutes (optionally _duration_ can be suffixed by 's', 'm' or 'h' to
+explicitly specify seconds, minutes and hours).
+
+_state_ defines the value of the new notification's state field.
+
+_methods_ is a space-delimited list of values which will be used to define
+the new notification's methods field.
+
+_description_ is arbitrary text which will be used as the descriptive contents
+of new notifications.
+
+

@@ -15,6 +15,16 @@
             "title": "Default notification path",
             "type": "string",
             "default": "notifications.injected"
+        },
+        "defaultstate": {
+            "title": "Default notification state",
+            "type": "string",
+            "default": "alert"
+        },
+        "defaultmethod": {
+            "title": "Default notification method",
+            "type": "string",
+            "default": "visual sound"
         }
 	}
 }

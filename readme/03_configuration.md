@@ -1,6 +1,6 @@
-## Usage
+## Configuration
 
-__signalk-notification-injector__ is confugured through the Signal K
+__signalk-notification-injector__ is configured through the Signal K
 Node server plugin configuration interface.
 Navigate to _Server->Plugin config_ and select the _Notification injector_ tab.
 
@@ -12,7 +12,7 @@ amending the configuration options discussed below.
 Changes you make will only be saved and applied when you finally click the
 _Submit_ button.
 
-The plugin configuration pane has just three entries:
+The plugin configuration pane has the following entries.
 
 ### FIFO path
 
@@ -37,3 +37,17 @@ with "notifications.".
 
 The default value is "notifications.injector." which means that simple
 keys will be placed under the path ```vessels.self.notifications.injector.```. 
+
+### Default notification state
+
+Defines the value to be used for the notification state field if no value
+is specified in a message.
+
+The default value is 'alert'.
+
+### Default notification methods
+
+Defines the values to be used for the notification methods field if no values
+are specified in a message.
+
+The default value is "visual sound".
