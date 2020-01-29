@@ -2,5 +2,7 @@
 	"fifo": {
 	},
 	"passwords": {
-	}
+	},
+    "defaultpath": {
+    }
 }

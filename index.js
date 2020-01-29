@@ -21,7 +21,7 @@ const Log = require("./lib/log.js");
 
 const PLUGIN_SCHEMA_FILE = __dirname + "/schema.json";
 const PLUGIN_UISCHEMA_FILE = __dirname + "/uischema.json";
-const DEBUG = true;
+const DEBUG = false;
 
 module.exports = function(app) {
 	var plugin = {};
@@ -39,23 +39,26 @@ module.exports = function(app) {
      * subsequently identified notification paths.
      */
 	plugin.schema = function() {
+        if (DEBUG) log.N("plugin.schema()...", false);
         var schema = Schema.createSchema(PLUGIN_SCHEMA_FILE);
         return(schema.getSchema());
     };
  
 	plugin.uiSchema = function() {
+        if (DEBUG) log.N("plugin.uiSchema()...", false);
         var schema = Schema.createSchema(PLUGIN_UISCHEMA_FILE);
         return(schema.getSchema());
     }
 
 	plugin.start = function(options) {
+        if (DEBUG) log.N("plugin.start(" + JSON.stringify(options) + ")...", false);
 		try {
             if (!fs.existsSync(options.fifo)) child_process.spawnSync('mkfifo', [ options.fifo ]);
             if (fs.lstatSync(options.fifo).isFIFO()) {
                 fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
                     log.N("Listening on " + options.fifo);
                     let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
-                    stream.on('data', d => processMessage(String(d).trim(), options.passwords.trim().split(" ")));
+                    stream.on('data', d => processMessage(String(d).trim(), options.passwords.trim().split(" "), options.defaultpath));
                 });
             } else {
                 log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
@@ -68,22 +71,25 @@ module.exports = function(app) {
 	}
 
 	plugin.stop = function() {
+        if (DEBUG) log.N("plugin.stop()...", false);
 	}
 
     /**
      * Parses a message of the form "password:text {on|off}" and if password is a member
      * of the passwords array then 
      */
-    function processMessage(message, passwords) {
-        if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(passwords) + ")...", false);
-        let parts  = message.split(":", 2);
-        if (parts.length == 2) {
-            let [ password, text ] = parts;
+    function processMessage(message, passwords, defaultpath) {
+        if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(passwords) + "," + defaultpath + ")...", false);
+        let parts  = message.split(":");
+        let password = (parts.length > 0)?parts[0]:null;
+        let key = (parts.length > 1)?parts[1]:null;
+        let description = (parts.length > 2)?parts[2]:"";
+        if ((password != null) && (key != null)) {
             if (passwords.includes(password.trim())) {
-                if (text.match(/ on$/i)) {
-                    insertNotification(text.slice(0,-3));
-                } else if (text.match(/ off$/i)) {
-                    deleteNotification(text.slice(0,-4));
+                if (key.match(/ on$/i)) {
+                    if ((key = getCanonicalKey(key.slice(0,-3), defaultpath)) !== null) issueNotification(key, description);
+                } else if (key.match(/ off$/i)) {
+                    if ((key = getCanonicalKey(key.slice(0,-4), defaultpath)) !== null) cancelNotification(key);
                 } else {
                     log.N("ignoring malformed request");
                 }
@@ -95,38 +101,31 @@ module.exports = function(app) {
         }
     }
 
-    function insertNotification(text) {
-        if (DEBUG) log.N("insertNotification(" + text + ")...", false);
+    function getCanonicalKey(key, defaultpath = "notifications.") {
+        if (DEBUG) log.N("getCanonicalKey(" + key + "," + defaultpath + ")...", false);
+        var retval = null;
+        if ((key) && (defaultpath)) {
+            while (key.charAt[0] == '.') key = key.slice(1);
+            while (key.charAt[key.length - 1] == '.') key = key.slice(0,-1);
+            if (key.length > 0) retval = defaultpath + "." + key;
+        }
+        return(retval);
     }
 
-	function deleteNotification(text) {
-        if (DEBUG) log.N("deleteNotification(" + text + ")...", false);
-	}
-
-    function cancelNotification(npath) {
-		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": npath, "value": null } ] } ] };
+    function cancelNotification(key) {
+        if (DEBUG) log.N("cancelNotification(" + key + ")...", false);
+		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
 		app.handleMessage(plugin.id, delta);
         return;
     }
 
-	function issueNotificationUpdate(test, npath, message, lowthreshold, highthreshold) {
-        var notificationValue = null;
-        var date = (new Date()).toISOString();
-		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": npath, "value": notificationValue } ] } ] };
-		var vessel = app.getSelfPath("name");
-        var state = ((test == 1)?highthreshold:lowthreshold).state;
-        var method = ((test == 1)?highthreshold:lowthreshold).method;
-        var value = ((test == 1)?highthreshold:lowthreshold).actual;
-        var threshold = ((test == 1)?highthreshold:lowthreshold).value;
-		var comp = (test == 1)?"above":"below";
-        var action = (state == "normal")?"stopping":"starting";
-		message = (message)?eval("`" + message + "`"):"";
-        notificationValue = { "state": state, "message": message, "method": method, "timestamp": date };
-        delta.updates[0].values[0].value = notificationValue;
+	function issueNotification(key, message) {
+        if (DEBUG) log.N("issueNotification(" + key + "," + message + ")...", false);
+		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
+        delta.updates[0].values[0].value = { "state": "alert", "message": message, "method": "visual", "timestamp": (new Date()).toISOString() };
 		app.handleMessage(plugin.id, delta);
         return;
 	}
 
-	return(plugin);
 	return plugin;
 }

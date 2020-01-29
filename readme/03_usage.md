@@ -27,12 +27,13 @@ The default value is ```/var/signalk-injector```.
 This is a whitespace delimited list of password tokens that will allow
 processing of an incoming message.
 
-The default value is "letmein 0000".
+The default value is "letmein 0000".  You should change this.
 
 ### Default notification path
 
 If a message doesn't specify a key path, then the requested key will be
-created under the path specified here.
+created under the path specified here.  The specified path must begin
+with "notifications.".
 
-The default value is "injector." which means that simple keys will be placed
-under the path ```vessels.self.notifications.injector.```. 
+The default value is "notifications.injector." which means that simple
+keys will be placed under the path ```vessels.self.notifications.injector.```. 

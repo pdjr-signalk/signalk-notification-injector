@@ -14,7 +14,7 @@
         "defaultpath": {
             "title": "Default notification path",
             "type": "string",
-            "default": "/control/injected"
+            "default": "notifications.injected"
         }
 	}
 }
