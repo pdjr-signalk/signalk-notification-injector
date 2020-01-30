@@ -22,5 +22,5 @@ $> echo "letmein:heating on" > /var/signalk-injector
 ```
 Signal K places no arbitrary restrictions on the semantics of notification keys
 and it is a straightforward task to implement plugins which react to the
-server's notification state allowing the construction of a simple notification
-based remote control system.
+server's notification state.
+

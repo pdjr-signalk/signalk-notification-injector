@@ -22,8 +22,8 @@ $> echo "letmein:heating on" > /var/signalk-injector
 ```
 Signal K places no arbitrary restrictions on the semantics of notification keys
 and it is a straightforward task to implement plugins which react to the
-server's notification state allowing the construction of a simple notification
-based remote control system.
+server's notification state.
+
 ## System requirements
 
 __signalk-notification-injector__ has no special system requirements that must
@@ -92,8 +92,8 @@ The default value is "visual sound".
 ## Usage
 
 Once __signalk-notification-injector__ is configured, you can inject a key
-into the Signal K notification tree by simply writing a line of text to
-the FIFO.  If configuration defaults are used, then:
+into the Signal K notification tree by writing a line of text to the FIFO.
+If configuration defaults are used, then:
 ```
 $> echo "letmein:test on:This is a remotely injected test notification" > /var/signalk-injector
 ```
@@ -103,9 +103,15 @@ The notification can be cancelled by:
 ```
 $> echo "letmein:test off" > /var/signalk-injector
 ```
-Note that is Signal K world, cancelling a notification does not necessarily
+Note that in Signal K world, cancelling a notification does not necessarily
 result in removal of the associated key, but it does set the key value to
 null.
+
+You can check the Signal K server's notification state at any time by
+substituting your server address in a url of the form:
+```
+http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/
+```
 
 Each line of text presented to the FIFO will be parsed into a notification
 as long as it conforms to some simple formatting rules and will otherwise be
@@ -145,5 +151,4 @@ the new notification's methods field.
 
 _description_ is arbitrary text which will be used as the descriptive contents
 of new notifications.
-
 
