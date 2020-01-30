@@ -52,7 +52,7 @@ _Submit_ button.
 
 The plugin configuration pane has the following entries.
 
-### FIFO path
+### FIFO named pipe
 
 This specifies the filename of the named pipe or FIFO.  When the plugin
 starts it will check for the presence of this file and, if necessary,
@@ -60,7 +60,7 @@ attempt to create it by a call to mkfifo(1).
 
 The default value is ```/var/signalk-injector```.
 
-### Passwords
+### Access passwords
 
 This is a whitespace delimited list of password tokens that will allow
 processing of an incoming message.
@@ -83,9 +83,9 @@ is specified in a message.
 
 The default value is 'alert'.
 
-### Default notification methods
+### Default notification method
 
-Defines the values to be used for the notification methods field if no values
+Defines the values to be used for the notification method field if no values
 are specified in a message.
 
 The default value is "visual sound".
