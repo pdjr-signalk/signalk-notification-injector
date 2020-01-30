@@ -120,6 +120,7 @@ module.exports = function(app) {
     function cancelNotification(key) {
         if (DEBUG) log.N("cancelNotification(" + key + ")...", false);
 		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
+        log.N("Deleting notification: " + key);
 		app.handleMessage(plugin.id, delta);
         return;
     }
@@ -128,6 +129,7 @@ module.exports = function(app) {
         if (DEBUG) log.N("issueNotification(" + key + "," + message + ")...", false);
 		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
         delta.updates[0].values[0].value = { "state": state, "message": message, "method": method, "timestamp": (new Date()).toISOString() };
+        log.N("Creating notification: " + key);
 		app.handleMessage(plugin.id, delta);
         return;
 	}
