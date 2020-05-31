@@ -16,8 +16,9 @@
 
 const fs = require('fs');
 const child_process = require('child_process');
-const Schema = require("./lib/schema.js");
-const Log = require("./lib/log.js");
+const Schema = require("./lib/signalk-libschema/Schema.js");
+const Log = require("./lib/signalk-liblog/Log.js");
+const Notification = require("./lib/signalk-libnotification/Notification.js");
 
 const PLUGIN_SCHEMA_FILE = __dirname + "/schema.json";
 const PLUGIN_UISCHEMA_FILE = __dirname + "/uischema.json";
@@ -31,6 +32,7 @@ module.exports = function(app) {
 	plugin.description = "Inject notifications into the Signal K alert tree";
 
     const log = new Log(app.setProviderStatus, app.setProviderError, plugin.id);
+    const notification = new Notification(app.handleMessage, app.selfId);
 
     /**
      * Load plugin schema from disk file and add a default list of notifiers
@@ -56,7 +58,7 @@ module.exports = function(app) {
             if (!fs.existsSync(options.fifo)) child_process.spawnSync('mkfifo', [ options.fifo ]);
             if (fs.lstatSync(options.fifo).isFIFO()) {
                 fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
-                    log.N("Listening on " + options.fifo);
+                    log.N("listening on " + options.fifo);
                     let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
                     stream.on('data', d => processMessage(String(d).trim(), options));
                 });
@@ -89,17 +91,23 @@ module.exports = function(app) {
         if ((password != null) && (key != null)) {
             if (options.passwords.split(" ").includes(password)) {
                 if (key.match(/ on$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-3), options.defaultpath)) !== null) issueNotification(key, description, state, method);
+                    if ((key = getCanonicalKey(key.slice(0,-3), options.defaultpath)) !== null) {
+                        log.N("issueing " + state + " notification on " + key);
+                        notification.issue(key, description, { "state": state, "method": method });
+                    }
                 } else if (key.match(/ off$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-4), options.defaultpath)) !== null) cancelNotification(key);
+                    if ((key = getCanonicalKey(key.slice(0,-4), options.defaultpath)) !== null) {
+                        log.N("cancelling notification on " + key);
+                        notification.cancel(key);
+                    }
                 } else {
-                    log.N("ignoring malformed request");
+                    log.N("ignoring malformed request: " + message);
                 }
             } else {
                 log.N("request could not be authenticated");
             }
         } else {
-            log.N("ignoring malformed request");
+            log.N("ignoring malformed request: " + message);
         }
     }
 
@@ -108,31 +116,18 @@ module.exports = function(app) {
         var retval = null;
         if (key) {
             if (defaultpath.match(/^notifications\.*/)) {
-                defaultpath += ((defaultpath.charAt(defaultpath.length - 1) != '.')?".":"");
-                while (key.charAt[0] == '.') key = key.slice(1);
-                while (key.charAt[key.length - 1] == '.') key = key.slice(0,-1);
-                if (key.length > 0) retval = defaultpath + key;
+                if (key.match(/^notifications\.*/)) {
+                    retval = key;
+                } else {
+                    defaultpath += ((defaultpath.charAt(defaultpath.length - 1) != '.')?".":"");
+                    while (key.charAt[0] == '.') key = key.slice(1);
+                    while (key.charAt[key.length - 1] == '.') key = key.slice(0,-1);
+                    if (key.length > 0) retval = defaultpath + key;
+                }
             }
         }
         return(retval);
     }
-
-    function cancelNotification(key) {
-        if (DEBUG) log.N("cancelNotification(" + key + ")...", false);
-		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
-        log.N("Deleting notification: " + key);
-		app.handleMessage(plugin.id, delta);
-        return;
-    }
-
-	function issueNotification(key, message, state, method) {
-        if (DEBUG) log.N("issueNotification(" + key + "," + message + ")...", false);
-		var delta = { "context": "vessels." + app.selfId, "updates": [ { "source": { "label": "self.notificationhandler" }, "values": [ { "path": key, "value": null } ] } ] };
-        delta.updates[0].values[0].value = { "state": state, "message": message, "method": method, "timestamp": (new Date()).toISOString() };
-        log.N("Creating notification: " + key);
-		app.handleMessage(plugin.id, delta);
-        return;
-	}
 
 	return plugin;
 }
