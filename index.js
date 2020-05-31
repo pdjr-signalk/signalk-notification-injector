@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const dgram = require('dgram');
+const ws = require('ws');
 const fs = require('fs');
 const child_process = require('child_process');
 
@@ -65,19 +65,14 @@ module.exports = function(app) {
                         let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
                         stream.on('data', d => processMessage(String(d).trim(), options));
                     });
-                    if (options.udp) { // Make UDP port interface
-                        const server = dgram.createSocket('udp4');
-                        server.on('listening', () => {
-                            log.N("listening on " + options.fifo + " and " + server.address().address + ":" + server.address().port);
+                    if (options.udp) { // Make WebSocket server interface
+                        log.N("listening on " + options.fifo + " and ws://0.0.0.0:" + options.udp);
+                        const server = new ws.Server({ port: options.udp });
+                        server.on('connection', (server) => {
+                            ws.on('message', (message) => {
+                                processMessage(String(message).trim(), options);
+                            });
                         });
-                        server.on('message', (msg, rinfo) => {
-                            processMessage(String(msg).trim(), options);
-                        });
-                        server.on('error', (err) => {
-                            log.E("error on UDP socket " + options.udp);
-                            server.close();
-                        });
-                        server.bind(options.udp);
                     }
                 } else {
                     log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
@@ -110,7 +105,7 @@ module.exports = function(app) {
             if (options.passwords.split(" ").includes(password)) {
                 if (key.match(/ on$/i)) {
                     if ((key = getCanonicalKey(key.slice(0,-3), options.defaultpath)) !== null) {
-                        log.N("issueing " + state + " notification on " + key);
+                        log.N("issuing " + state + " notification on " + key);
                         notification.issue(key, description, { "state": state, "method": method });
                     }
                 } else if (key.match(/ off$/i)) {

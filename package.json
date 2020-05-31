@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/preeve9534/signalk-notification-injector/issues"
   },
-  "homepage": "https://github.com/preeve9534/signalk-notification-injector#readme"
+  "homepage": "https://github.com/preeve9534/signalk-notification-injector#readme",
+  "dependencies": {
+    "ws": "^7.3.0"
+  }
 }
