@@ -9,10 +9,11 @@ section of the Signal K documentation may provide helpful orientation.
 
 ## Principle of operation
 
-__signalk-notification-injector__ parses messages received on a named pipe
-(FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
+__signalk-notification-injector__ listens on a named pipe (FIFO) and,
+optionally, on a specified UDP port for messages which it attempts to parse
+into keys in the host server's ```vessels.self.notifications``` tree.
 
-Messages written to the FIFO consist of single lines of text and must conform
+Received messages must consist of single lines of text and must conform
 to some simple formatting and security rules or they will be silently ignored.
 
 Any process which is able to write to the named pipe has access to the
@@ -50,15 +51,23 @@ amending the configuration options discussed below.
 Changes you make will only be saved and applied when you finally click the
 _Submit_ button.
 
-The plugin configuration pane has the following entries.
+The plugin configuration pane has the following properties.
 
 ### FIFO named pipe
 
-This specifies the filename of the named pipe or FIFO.  When the plugin
-starts it will check for the presence of this file and, if necessary,
-attempt to create it by a call to mkfifo(1).
+Specifies the filename of the named pipe or FIFO on which the plugin should
+listen.
+When the plugin starts it will check for the presence of this file and, if
+necessary, attempt to create it by a call to mkfifo(1).
+Required.
+Defaults to '/var/signalk-injector'.
 
-The default value is ```/var/signalk-injector```.
+### UDP port
+
+The plugin always listens on its named pipe, but this property can be used
+to specify a UDP port on which the plugin should also listen.
+Optional.
+No default.
 
 ### Access passwords
 
@@ -92,7 +101,8 @@ The default value is "visual sound".
 ## Usage
 
 Once __signalk-notification-injector__ is configured, you can inject a key
-into the Signal K notification tree by writing a line of text to the FIFO.
+into the Signal K notification tree by writing a line of text to the FIFO
+or UDP port (if configured).
 If configuration defaults are used, then:
 ```
 $> echo "letmein:test on:This is a remotely injected test notification" > /var/signalk-injector
@@ -113,14 +123,14 @@ substituting your server address in a url of the form:
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/
 ```
 
-Each line of text presented to the FIFO will be parsed into a notification
+Each line of text received by the plugin will be parsed into a notification
 as long as it conforms to some simple formatting rules and will otherwise be
 silently ignored.  It is convenient to think of each text line as a message,
 and the rules of message formatting are described below.
 
 ## Message format
 
-Messages written to the FIFO must conform to the following pattern (those that
+Messages sent to the plugin must conform to the following pattern (those that
 do not will be silently ignored):
 
 _password_:_key_ {{__on__|_duration_}[:_description_][:_state_][:_methods_]|__off__}

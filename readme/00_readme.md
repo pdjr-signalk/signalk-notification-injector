@@ -9,10 +9,11 @@ section of the Signal K documentation may provide helpful orientation.
 
 ## Principle of operation
 
-__signalk-notification-injector__ parses messages received on a named pipe
-(FIFO) into keys in the host server's ```vessels.self.notifications``` tree.
+__signalk-notification-injector__ listens on a named pipe (FIFO) and,
+optionally, on a specified UDP port for messages which it attempts to parse
+into keys in the host server's ```vessels.self.notifications``` tree.
 
-Messages written to the FIFO consist of single lines of text and must conform
+Received messages must consist of single lines of text and must conform
 to some simple formatting and security rules or they will be silently ignored.
 
 Any process which is able to write to the named pipe has access to the

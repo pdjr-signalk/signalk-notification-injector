@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+const dgram = require('dgram');
 const fs = require('fs');
 const child_process = require('child_process');
+
 const Schema = require("./lib/signalk-libschema/Schema.js");
 const Log = require("./lib/signalk-liblog/Log.js");
 const Notification = require("./lib/signalk-libnotification/Notification.js");
@@ -55,16 +57,32 @@ module.exports = function(app) {
 	plugin.start = function(options) {
         if (DEBUG) log.N("plugin.start(" + JSON.stringify(options) + ")...", false);
 		try {
-            if (!fs.existsSync(options.fifo)) child_process.spawnSync('mkfifo', [ options.fifo ]);
-            if (fs.lstatSync(options.fifo).isFIFO()) {
-                fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
-                    log.N("listening on " + options.fifo);
-                    let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
-                    stream.on('data', d => processMessage(String(d).trim(), options));
-                });
-            } else {
-                log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
-                return;
+            if (options.fifo) { // Make local FIFO interface
+                if (!fs.existsSync(options.fifo)) child_process.spawnSync('mkfifo', [ options.fifo ]);
+                if (fs.lstatSync(options.fifo).isFIFO()) {
+                    fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
+                        log.N("listening on " + options.fifo);
+                        let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
+                        stream.on('data', d => processMessage(String(d).trim(), options));
+                    });
+                    if (options.udp) { // Make UDP port interface
+                        const server = dgram.createSocket('udp4');
+                        server.on('listening', () => {
+                            log.N("listening on " + options.fifo + " and " + server.address().address + ":" + server.address().port);
+                        });
+                        server.on('message', (msg, rinfo) => {
+                            processMessage(String(msg).trim(), options);
+                        });
+                        server.on('error', (err) => {
+                            log.E("error on UDP socket " + options.udp);
+                            server.close();
+                        });
+                        server.bind(options.udp);
+                    }
+                } else {
+                    log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
+                    return;
+                }
             }
 		} catch(e) {
 			log.E("Failed: " + e);

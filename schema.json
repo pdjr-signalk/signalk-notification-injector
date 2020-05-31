@@ -1,11 +1,16 @@
 {	
 	"type": "object",
+    "required": [ "fifo" ],
 	"properties": {
 		"fifo": {
             "title": "FIFO named pipe",
             "type": "string",
             "default": "/var/signalk-injector"
 		},
+        "udp": {
+            "title": "UDP port",
+            "type": "number"
+        },
 		"passwords": {
 			"title": "Access passwords",
 			"type": "string",

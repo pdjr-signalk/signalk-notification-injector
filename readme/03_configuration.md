@@ -12,15 +12,23 @@ amending the configuration options discussed below.
 Changes you make will only be saved and applied when you finally click the
 _Submit_ button.
 
-The plugin configuration pane has the following entries.
+The plugin configuration pane has the following properties.
 
 ### FIFO named pipe
 
-This specifies the filename of the named pipe or FIFO.  When the plugin
-starts it will check for the presence of this file and, if necessary,
-attempt to create it by a call to mkfifo(1).
+Specifies the filename of the named pipe or FIFO on which the plugin should
+listen.
+When the plugin starts it will check for the presence of this file and, if
+necessary, attempt to create it by a call to mkfifo(1).
+Required.
+Defaults to '/var/signalk-injector'.
 
-The default value is ```/var/signalk-injector```.
+### UDP port
+
+The plugin always listens on its named pipe, but this property can be used
+to specify a UDP port on which the plugin should also listen.
+Optional.
+No default.
 
 ### Access passwords
 
