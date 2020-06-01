@@ -16,10 +16,10 @@ pipe (FIFO) or a websocket port into keys in the Signal K  host server's
 Messages are single lines of text which conform to some simple formatting and
 security rules.
 
-Any local process which is able to write to the named pipe has access to the
+Any process which is able to write to the named pipe has access to the
 injection process and creating a notification can be as simple as:
 ```
-$> echo "letmein:heating on" > /var/signalk-injector
+$> echo "letmein@heating:on" > /var/signalk-injector
 ```
 
 Remote processes or applications can achieve the same result by making a

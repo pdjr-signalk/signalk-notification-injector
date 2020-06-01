@@ -1,64 +1,70 @@
 ## Usage
 
 Once __signalk-notification-injector__ is configured, you can inject a key
-into the Signal K notification tree by writing a line of text to the FIFO
-or UDP port (if configured).
+into the Signal K notification tree by writing a message to either the FIFO or
+websocket port.
+Note that the websocket interface is disabled by default and must be explicitly
+enabled in the plugin configuration before use.
+
 If configuration defaults are used, then:
 ```
-$> echo "letmein:test on:This is a remotely injected test notification" > /var/signalk-injector
+$> echo "letmein@:test:on This is a remotely injected test notification" > /var/signalk-injector
 ```
-will insert the key ```notifications.injected.test```.
+will issue an 'alert' notification on the key ```notifications.injected.test```.
 
-The notification can be cancelled by:
+This notification can be cancelled (in fact, deleted) by:
 ```
-$> echo "letmein:test off" > /var/signalk-injector
-```
-Note that in Signal K world, cancelling a notification does not necessarily
-result in removal of the associated key, but it does set the key value to
-null.
-
-You can check the Signal K server's notification state at any time by
-substituting your server address in a url of the form:
-```
-http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/
+$> echo "letmein@test:off" > /var/signalk-injector
 ```
 
-Each line of text received by the plugin will be parsed into a notification
-as long as it conforms to some simple formatting rules and will otherwise be
-silently ignored.  It is convenient to think of each text line as a message,
-and the rules of message formatting are described below.
+You can check this behaviour on your Signal K server by substituting your
+server address in a url of the form:
+```
+http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
+```
+
+Each message received by the plugin will be parsed into a notification
+as long as it conforms to the simple formatting described below.
 
 ## Message format
 
-Messages sent to the plugin must conform to the following pattern (those that
-do not will be silently ignored):
+Messages sent to the plugin must conform to one of the following patterns:
 
-_password_:_key_ {{__on__|_duration_}[:_description_][:_state_][:_methods_]|__off__}
+[*password*__@__]*key*__[__:__[*state*][__:__[*method*]]] description
+[*password*__@__]*key*__:__{__off__|__cancel__}
 
-_password_ is a plaintext token which will be checked against a collection of
-allowed tokens defined in the plugin configuration.  In my SMS control system
-_password_ is set by the SMS receiver to the originating caller-id: in this
-way, only SMS messages from authorised callers are accepted.
+The first form is used to issue a notification, the second form to cancel
+(or delete) any existing notification.
 
-_key_ is the key which should be inserted into the server's notification tree.
-If _key_ includes a path, then the value of _key_ will be used as-is; if _key_
-is simply a token, then the default notification path defined in the plugin
-configuration will be prepended.
+If the interface being used to deliver the message is configured as protected,
+then _password_ must be supplied and it must have a value which is defined in
+the plugin's list of security keywords for notification generation to be
+permitted.
+If the interface being used is not protected, then *password* is optional and
+if a value is supplied it will be discarded.
 
-__on__ says create _key_.
+_key_ is the notification key to which the message applies and it should
+take the form of a simple name or a dotted pathname.
+If _key_ includes an absolute notificatiom path (i.e. one that begins
+'.notifications.'), then the value of _key_ will be used as-is; otherwise,
+the _Default notification path_ defined in the plugin configuration will be
+prepended to _key_.
 
-__off__ says delete _key_ value.
+The optional _state_ field sets the state property of an issued notification.
+If _state_ is omitted or left blank, then the _Default notification state_
+defined in the plugin configuration will be used.
+If _state_ is supplied, then it should be one of the standard values defined
+in Signal K ('normal', 'alert', 'alarm' and 'emergency') or the special plugin
+value 'on' which is simply an alias for 'alert'.
 
-_duration_ says create _key_, but automatically delete it after a specified
- time.  _duration_ must be an integer value and is taken to specify a number
-of minutes (optionally _duration_ can be suffixed by 's', 'm' or 'h' to
-explicitly specify seconds, minutes and hours).
-
-_state_ defines the value of the new notification's state field.
-
-_methods_ is a space-delimited list of values which will be used to define
-the new notification's methods field.
+The optional _method_ field sets the method property of an issued notification.
+If _method_ is omitted, then the _Default notification method_ defined in the
+plugin configuration will be used.
+If _method_ is left blank, then no method will be specified in the generated
+notification.
+The supplied value must be a comma-delimited list of notification methods
+(the standard methods in Signal K are 'visual' and 'sound').
 
 _description_ is arbitrary text which will be used as the descriptive contents
-of new notifications.
+of the issued notification.
 
