@@ -11,7 +11,7 @@
                     "type": "object",
                     "properties": {
                         "enabled": { "title": "Enabled?", "type": "boolean", "default": true },
-                        "protected": { "title": "Password protected?", "type": "boolean", "default": "true" },
+                        "protected": { "title": "Password protected?", "type": "boolean", "default": true },
                         "path": { "title": "Pathname", "type": "string", "default": "/var/signalk-injector" }
                     }
                 },
@@ -20,7 +20,7 @@
                     "type": "object",
                     "properties": {
                         "enabled": { "title": "Enabled?", "type": "boolean", "default": false },
-                        "protected": { "title": "Password protected?", "type": "boolean", "default": "true" },
+                        "protected": { "title": "Password protected?", "type": "boolean", "default": true },
                         "port": { "title": "Port", "type": "number", "default": 6543 }
                     }
                 }
@@ -48,15 +48,20 @@
                     "items": {
                         "type": "string",
                         "enum": [ "visual", "sound" ]
-                    }
+                    },
+                    "uniqueItems": true
                 }
             }
         },
         "security": {
-		    "passwords": {
-			    "title": "Access passwords",
-			    "type": "string",
-			    "default": ""
+            "title": "Security settings",
+            "type": "object",
+            "properties": {
+		        "passwords": {
+			        "title": "Access passwords",
+			        "type": "string",
+			        "default": ""
+                }
             }
 		}
 	}

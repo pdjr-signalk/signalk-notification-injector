@@ -1,12 +1,32 @@
 {
-	"fifo": {
-	},
-	"passwords": {
-	},
-    "defaultpath": {
+    "interfaces": {
+        "ui:field": "collapsible",
+        "collapse": {
+            "field": "ObjectField",
+            "wrapClassName": "panel-group"
+        },
+        "fifo": {
+            "classNames": "col-sm-6"
+        },
+        "ws": {
+            "classNames": "col-sm-6"
+        }
     },
-    "defaultstate": {
+    "notification": {
+        "ui:field": "collapsible",
+        "collapse": {
+            "field": "ObjectField",
+            "wrapClassName": "panel-group"
+        },
+        "defaultpath": { "classNames": "col-sm-12" },
+        "defaultstate": { "classNames": "col-sm-6", "ui:widget": "radio" },
+        "defaultmethods": { "classNames": "col-sm-6", "ui:widget": "checkboxes" }
     },
-    "defaultmethod": {
+    "security": {
+        "ui:field": "collapsible",
+        "collapse": {
+            "field": "ObjectField",
+            "wrapClassName": "panel-group"
+        }
     }
 }
