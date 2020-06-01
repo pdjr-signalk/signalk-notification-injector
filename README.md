@@ -147,7 +147,7 @@ http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 A message to the plugin must consist of a single line of text conforming to
 the formatting constraints described below.
 
-## Message format
+### Message format
 
 Messages sent to the plugin must conform to one of the following patterns:
 
