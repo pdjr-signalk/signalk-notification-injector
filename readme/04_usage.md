@@ -1,12 +1,10 @@
 ## Usage
 
-Once __signalk-notification-injector__ is configured, you can inject a key
-into the Signal K notification tree by writing a message to either the FIFO or
-websocket port.
-Note that the websocket interface is disabled by default and must be explicitly
-enabled in the plugin configuration before use.
+Once __signalk-notification-injector__ is configured and activated, you can
+inject a notification into the Signal K notification tree by writing a message
+to one or other of the configured interfaces.
 
-If configuration defaults are used, then:
+If the FIFO interface is enabled on its default path, then:
 ```
 $> echo "letmein@:test:on This is a remotely injected test notification" > /var/signalk-injector
 ```
@@ -23,8 +21,8 @@ server address in a url of the form:
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 ```
 
-Each message received by the plugin will be parsed into a notification
-as long as it conforms to the simple formatting described below.
+A message to the plugin must consist of a single line of text conforming to
+the formatting constraints described below.
 
 ## Message format
 
