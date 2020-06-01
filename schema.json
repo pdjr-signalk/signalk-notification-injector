@@ -2,34 +2,63 @@
 	"type": "object",
     "required": [ "fifo" ],
 	"properties": {
-		"fifo": {
-            "title": "FIFO named pipe",
-            "type": "string",
-            "default": "/var/signalk-injector"
+        "interfaces": {
+            "title": "Service interfaces",
+            "type": "object",
+            "properties": {
+		        "fifo": {
+                    "title": "FIFO named pipe",
+                    "type": "object",
+                    "properties": {
+                        "enabled": { "title": "Enabled?", "type": "boolean", "default": true },
+                        "protected": { "title": "Password protected?", "type": "boolean", "default": "true" },
+                        "path": { "title": "Pathname", "type": "string", "default": "/var/signalk-injector" }
+                    }
+                },
+                "ws": {
+                    "title": "Websocket",
+                    "type": "object",
+                    "properties": {
+                        "enabled": { "title": "Enabled?", "type": "boolean", "default": false },
+                        "protected": { "title": "Password protected?", "type": "boolean", "default": "true" },
+                        "port": { "title": "Port", "type": "number", "default": 6543 }
+                    }
+                }
+            }
 		},
-        "udp": {
-            "title": "UDP port",
-            "type": "number"
+        "notification": {
+            "title": "Default notification properties",
+            "type": "object",
+            "properties": {
+                "defaultpath": {
+                    "title": "Default notification path",
+                    "type": "string",
+                    "default": "notifications.injected"
+                },
+                "defaultstate": {
+                    "title": "Default notification state",
+                    "type": "string",
+                    "enum": [ "normal", "warning", "alert", "alarm", "emergency" ],
+                    "default": "alert"
+                },
+                "defaultmethods": {
+                    "title": "Default notification methods",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "type": "string",
+                        "enum": [ "visual", "sound" ]
+                    }
+                }
+            }
         },
-		"passwords": {
-			"title": "Access passwords",
-			"type": "string",
-			"default": ""
-		},
-        "defaultpath": {
-            "title": "Default notification path",
-            "type": "string",
-            "default": "notifications.injected"
-        },
-        "defaultstate": {
-            "title": "Default notification state",
-            "type": "string",
-            "default": "alert"
-        },
-        "defaultmethod": {
-            "title": "Default notification method",
-            "type": "string",
-            "default": "visual sound"
-        }
+        "security": {
+		    "passwords": {
+			    "title": "Access passwords",
+			    "type": "string",
+			    "default": ""
+            }
+		}
 	}
 }
+

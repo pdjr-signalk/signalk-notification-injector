@@ -12,50 +12,69 @@ amending the configuration options discussed below.
 Changes you make will only be saved and applied when you finally click the
 _Submit_ button.
 
-The plugin configuration pane has the following properties.
+The plugin configuration properties are organised under three collapsible tabs.
 
-### FIFO named pipe
+### Service interfaces
 
-Specifies the filename of the named pipe or FIFO on which the plugin should
-listen.
-When the plugin starts it will check for the presence of this file and, if
-necessary, attempt to create it by a call to mkfifo(1).
+These properties define which, if any, of the possible plugin interfaces are
+enabled and provide configuration details for each interface.
+There are two sub-sections.
+
+__FIFO named pipe -> Enabled?__ defines whether or not the local named pipe
+will be monitored by the plugin.
 Required.
-Defaults to '/var/signalk-injector'.
+Default is checked (monitor the named pipe).
 
-### UDP port
+__FIFO named pipe -> Path__ defines the absolute path of the named pipe.
+Required.
+Default is '/var/signalk-injector'.
 
-The plugin always listens on its named pipe, but this property can be used
-to specify a UDP port on which the plugin should also listen.
-Optional.
-No default.
+__WebSocket -> Enabled?__ defines whether or not the plugin will accept TCP
+websocket connections. 
+Required.
+Default is un-checked (do not accept websocket connections).
 
-### Access passwords
+__Websocket -> Port__ defines the port number on which the plugin will listen.
+Required.
+Default is 6543.
 
-This is a whitespace delimited list of password tokens that will allow
-processing of an incoming message.
+### Notification defaults
 
-The default value is "letmein 0000".  You should change this.
+These properties define what default values will be used by the plugin when it
+constructs a notification from a received message.
+Setting defaults is a way of simplifying the content of most incoming messages.
+Defaults can always be over-ridden on a per-message basis.
 
-### Default notification path
+__Default path__ defines the root in the notifications tree where the plugin
+will place notifications which do not specify an absolute notification key
+(that is a key which begins with 'notifications...').
+The supplied path must be absolute (i.e. must begin with 'notifications.').
+Required.
+Default is 'notifications.injector'.
 
-If a message doesn't specify a key path, then the requested key will be
-created under the path specified here.  The specified path must begin
-with "notifications.".
+__Default state__ defines the value to be used for the notification state
+field if no state is specified in a message.
+Required.
+Default value is 'alert'.
 
-The default value is "notifications.injector." which means that simple
-keys will be placed under the path ```vessels.self.notifications.injector.```. 
+__Default method__ defines the values to be used for the notification method
+field if no values are specified in a message.
+Required.
+The default value is to specify no methods.
 
-### Default notification state
+### Access security
 
-Defines the value to be used for the notification state field if no value
-is specified in a message.
+These properties define whether or not a simple keyword-based security check
+should be applied to incoming messages.
 
-The default value is 'alert'.
+__Perform access check on__ defines which communication interfaces will have a
+security chcek applied to their incoming messages.
+Required.
+Default is to apply security checks to all interfaces.
 
-### Default notification method
+__Passwords__ defines a space separated collection of keywords, one of which
+must be included in messages presented to interfaces on which access checking
+is enabled.
+Required.
+Default value is 'letmein 0000' and you should change this.  
 
-Defines the values to be used for the notification method field if no values
-are specified in a message.
-
-The default value is "visual sound".

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-const ws = require('ws');
+const WebSocket = require('ws');
 const fs = require('fs');
 const child_process = require('child_process');
 
@@ -34,7 +34,7 @@ module.exports = function(app) {
 	plugin.description = "Inject notifications into the Signal K alert tree";
 
     const log = new Log(app.setProviderStatus, app.setProviderError, plugin.id);
-    const notification = new Notification(app.handleMessage, app.selfId);
+    const notification = new Notification(app, plugin.id);
 
     /**
      * Load plugin schema from disk file and add a default list of notifiers
@@ -56,32 +56,40 @@ module.exports = function(app) {
 
 	plugin.start = function(options) {
         if (DEBUG) log.N("plugin.start(" + JSON.stringify(options) + ")...", false);
-		try {
-            if (options.fifo) { // Make local FIFO interface
-                if (!fs.existsSync(options.fifo)) child_process.spawnSync('mkfifo', [ options.fifo ]);
-                if (fs.lstatSync(options.fifo).isFIFO()) {
-                    fs.open(options.fifo, fs.constants.O_RDWR, (err, pipeHandle) => {
-                        log.N("listening on " + options.fifo);
+
+        // Make local FIFO interface
+        if (options.interfaces.fifo.enabled) {
+		    try {
+                if (!fs.existsSync(options.interfaces.fifo.path)) child_process.spawnSync('mkfifo', [ options.interfaces.fifo.path ]);
+                if (fs.lstatSync(options.interfaces.fifo.path).isFIFO()) {
+                    fs.open(options.interfaces.fifo.path, fs.constants.O_RDWR, (err, pipeHandle) => {
+                        log.N("FIFO listener active on " + options.interfaces.fifo.path, false);
                         let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
-                        stream.on('data', d => processMessage(String(d).trim(), options));
+                        stream.on('data', (message) => processMessage(String(message).trim(), options.interfaces.fifo.protected, options));
                     });
-                    if (options.udp) { // Make WebSocket server interface
-                        log.N("listening on " + options.fifo + " and ws://0.0.0.0:" + options.udp);
-                        const server = new ws.Server({ port: options.udp });
-                        server.on('connection', (server) => {
-                            ws.on('message', (message) => {
-                                processMessage(String(message).trim(), options);
-                            });
-                        });
-                    }
-                } else {
-                    log.E("Configured FIFO (" + options.fifo + ") does not exist or is not a named pipe");
-                    return;
                 }
+            } catch(e) {
+                log.E("unable to create FIFO interface (" + e + ")");
             }
-		} catch(e) {
-			log.E("Failed: " + e);
-			return;
+        } else {
+            log.N("not starting FIFO interface (disabled by configuration)");
+        }
+
+        // Make WebSocket server interface
+        if (options.interfaces.ws.enabled) {
+            try {
+                const server = new WebSocket.Server({ port: options.interfaces.ws.port });
+                server.on('listening', () => {
+                    log.N("WebSocket listener active  on port " + options.interfaces.ws.port);
+                    server.on('connection', (ws) => {
+                        ws.on('message', (message) => processMessage(String(message).trim(), options.interfaces.ws.protected, options));
+                    });
+                });
+		    } catch(e) {
+                log.E("unable to create WebSocket interface (" + e + ")");
+            }
+        } else {
+            log.N("not starting FIFO interface (disabled by configuration)");
 		}
 	}
 
@@ -90,31 +98,48 @@ module.exports = function(app) {
 	}
 
     /**
-     * Parses a message of the form "password:text {on|off}" and if password is a member
-     * of the passwords array then 
+     * Parses a message of the form "password@key:state:methods description".
      */
-    function processMessage(message, options) {
+    function processMessage(message, checkPassword, options) {
         if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(options) + ")...", false);
-        let parts  = message.split(":");
-        let password = (parts.length > 0)?parts[0].trim():null;
-        let key = (parts.length > 1)?parts[1].trim():null;
-        let description = ((parts.length > 2)?parts[2]:"").trim();
-        let state = ((parts.length > 3)?parts[3]:options.defaultstate).trim();
-        let method = ((parts.length > 4)?parts[4]:options.defaultmethod).trim().split(" ");
-        if ((password != null) && (key != null)) {
-            if (options.passwords.split(" ").includes(password)) {
-                if (key.match(/ on$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-3), options.defaultpath)) !== null) {
+
+        var password = null;
+        var key = null;
+        var state = options.notification.defaultstate.trim();
+        var methods = options.notification.defaultmethods;
+        var description = "";
+
+        var parts = message.split(' ');
+        // Get description
+        if (parts.length > 1) description = parts[1].trim();
+        // Get password
+        if (parts[0].includes('@')) { [ password, message ] = parts[0].split('@'); } else { password = null; message = parts[0]; }
+        var parts = message.split(':');
+        // Get key, state, methods
+        if (parts.length > 0) key = parts[0].trim();
+        if (parts.length > 1) state = parts[1].trim();
+        if (parts.length > 2) methods = parts[2].trim().split(',');
+
+        if (key) {
+            let proceed = false;
+            if (checkPassword) {
+                if (password) proceed = options.security.passwords.split(" ").includes(password);
+            } else {
+                proceed = true;
+            }
+            if (proceed) {
+                if ((key = getCanonicalKey(key, options.notification.defaultpath)) !== null) {
+                    if (state.match(/on/i)) state = 'alert';
+                    if (state.match(/off/i)) state = null;
+                    if (state) {
                         log.N("issuing " + state + " notification on " + key);
-                        notification.issue(key, description, { "state": state, "method": method });
-                    }
-                } else if (key.match(/ off$/i)) {
-                    if ((key = getCanonicalKey(key.slice(0,-4), options.defaultpath)) !== null) {
+                        notification.issue(key, description, { "state": state, "method": methods });
+                    } else {
                         log.N("cancelling notification on " + key);
                         notification.cancel(key);
                     }
                 } else {
-                    log.N("ignoring malformed request: " + message);
+                    log.E("ignoring malformed request: " + message);
                 }
             } else {
                 log.N("request could not be authenticated");
