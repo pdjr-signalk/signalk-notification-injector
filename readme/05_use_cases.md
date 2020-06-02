@@ -1,6 +1,6 @@
 ## Use cases
 
-### SMS control interface <beatrice@pdjr.eu>
+### SMS control interface
 
 On _Beatrice_ I use __signalk-notification-injector__ as part of an SMS based
 remote control system which allows me to do things like turn on lights and
@@ -29,3 +29,5 @@ for i in `seq ${SMS_MESSAGES}` ; do
 done
 
 ```
+
+*Paul Reeve* \<<preeve@pdjr.eu>\>
