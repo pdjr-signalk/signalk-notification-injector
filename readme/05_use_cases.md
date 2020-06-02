@@ -29,5 +29,3 @@ for i in `seq ${SMS_MESSAGES}` ; do
 done
 
 ```
-
-*Paul Reeve* \<<preeve@pdjr.eu>\>
