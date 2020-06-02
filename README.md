@@ -228,6 +228,8 @@ of the issued notification.
 
 ## Use cases
 
+### SMS control interface <beatrice@pdjr.eu>
+
 On _Beatrice_ I use __signalk-notification-injector__ as part of an SMS based
 remote control system which allows me to do things like turn on lights and
 heating and so on.
