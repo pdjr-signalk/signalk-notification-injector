@@ -23,7 +23,7 @@ FIFO=/var/signalk-injector
 PROGRAM=/bin/echo
 
 for i in `seq ${SMS_MESSAGES}` ; do
-    eval "$PROGRAM \"\${SMS_${i}_NUMBER}\":\"\${SMS_${i}_TEXT}\"" > ${FIFO}
+    eval "$PROGRAM \"\${SMS_${i}_NUMBER}\"@\"\${SMS_${i}_TEXT}\"" > ${FIFO}
 done
 
 ```
