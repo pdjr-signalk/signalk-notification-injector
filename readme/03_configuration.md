@@ -87,11 +87,11 @@ specify a notification state.
 Required.
 Default value is 'alert'.
 
-__Default notification methods__ specifies the values to be used for thes
+__Default notification methods__ specifies the values to be used for the
 method property of notifications derived from messages which do not
 themselves specify a notication method or methods.
 Required.
-The default value is to specify no methods.
+The default is not to specify any methods.
 
 ### Security settings
 
@@ -103,11 +103,14 @@ client IP addresses from which connections to the UDP and TCP interfaces will
 be accepted.
 The wildcard '\*' can be used in any part of an address.
 Required.
-The default value is '*.*.*.*' which allows connection from all clients.
+Default value is '127.0.0.1' which will only allow access from the Signal K
+host.
+You should change this to reflect your local requirement.
 
 __Access passwords__ specifies a space separated collection of passwords,
 one of which must be included in messages presented to plugin interfaces on
 which password protection is enabled.
 Required.
 Default value is 'letmein 0000'.  
+You may want to change this to reflect your local requirement.
 

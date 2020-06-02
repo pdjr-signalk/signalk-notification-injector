@@ -97,7 +97,7 @@ module.exports = function(app) {
                 server.on('listening', () => {
                     log.N("TCP websocket listener active  on port " + options.interfaces.ws.port);
                     server.on('connection', (ws) => {
-                        ws.on('message', (message) => processMessage(String(message).trim(), ws._socket.remoteAddress, options.interfaces.ws.protected, options));
+                        ws.on('message', (message) => processMessage(String(message).trim(), ws._socket.remoteAddress.substr(7), options.interfaces.ws.protected, options));
                     });
                 });
 		    } catch(e) {

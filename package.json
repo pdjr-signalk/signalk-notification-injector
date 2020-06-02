@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/preeve9534/signalk-notification-injector#readme",
   "dependencies": {
-    "websocket": "^1.0.31",
     "ws": "^7.3.0"
   }
 }

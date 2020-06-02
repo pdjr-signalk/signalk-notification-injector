@@ -130,11 +130,11 @@ specify a notification state.
 Required.
 Default value is 'alert'.
 
-__Default notification methods__ specifies the values to be used for thes
+__Default notification methods__ specifies the values to be used for the
 method property of notifications derived from messages which do not
 themselves specify a notication method or methods.
 Required.
-The default value is to specify no methods.
+The default is not to specify any methods.
 
 ### Security settings
 
@@ -146,13 +146,16 @@ client IP addresses from which connections to the UDP and TCP interfaces will
 be accepted.
 The wildcard '\*' can be used in any part of an address.
 Required.
-The default value is '*.*.*.*' which allows connection from all clients.
+Default value is '127.0.0.1' which will only allow access from the Signal K
+host.
+You should change this to reflect your local requirement.
 
 __Access passwords__ specifies a space separated collection of passwords,
 one of which must be included in messages presented to plugin interfaces on
 which password protection is enabled.
 Required.
 Default value is 'letmein 0000'.  
+You may want to change this to reflect your local requirement.
 
 ## Usage
 
@@ -173,7 +176,7 @@ $> echo "letmein@test:cancel" > /var/signalk-injector
 will cancel this notification.
 
 You can check this behaviour on your Signal K server by substituting your
-server address in a url of the following form and reviewing browser output.
+server address in a URL of the following form and reviewing browser output.
 ```
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 ```
@@ -192,18 +195,18 @@ Messages sent to the plugin must conform to one of the following patterns:
 [*password*__@__]*key*__:__{__off__|__cancel__}
 
 The first form is used to issue a notification, the second form to cancel
-(or delete) any existing notification.
+(delete) any existing notification.
 
 The optional _password_ field is required if the interface used to deliver
 the message has its _Protected?_ configuration property enabled.
 In this case, messages will only be processed if the supplied _password_ has a
-value which is defined in the plugin's list of security keywords.
+value which is defined in the plugin's _Access passwords_ configuration setting.
 If the interface being used is not protected, then _password_ is optional and
 if a value is supplied it will be discarded.
 
 _key_ is the notification key to which the message applies and it should
 take the form of a simple name or a dotted pathname.
-If _key_ includes an absolute notificatiom path (i.e. one that begins
+If _key_ includes an absolute notification path (i.e. one that begins
 '.notifications.'), then the value of _key_ will be used as-is; otherwise,
 the _Default notification path_ defined in the plugin configuration will be
 prepended to _key_.
@@ -240,7 +243,7 @@ Received texts are passed by ```gammu-smsd``` to a simple shell script which
 parses the content into a message suitable for consumption by
 __signalk-notification-injector__.
 
-The ```[smsd]``` stanza of my ```gammu-smsd``` configuration file includes thes
+The ```[smsd]``` stanza of my ```gammu-smsd``` configuration file includes the
  line:
 ```
 RunOnReceive = /usr/local/bin/signalk-inject

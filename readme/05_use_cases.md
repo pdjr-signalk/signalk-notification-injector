@@ -12,7 +12,7 @@ Received texts are passed by ```gammu-smsd``` to a simple shell script which
 parses the content into a message suitable for consumption by
 __signalk-notification-injector__.
 
-The ```[smsd]``` stanza of my ```gammu-smsd``` configuration file includes thes
+The ```[smsd]``` stanza of my ```gammu-smsd``` configuration file includes the
  line:
 ```
 RunOnReceive = /usr/local/bin/signalk-inject
