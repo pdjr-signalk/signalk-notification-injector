@@ -66,7 +66,7 @@ module.exports = function(app) {
                     fs.open(options.interfaces.fifo.path, fs.constants.O_RDWR, (err, pipeHandle) => {
                         log.N("FIFO listener active on " + options.interfaces.fifo.path, false);
                         let stream = fs.createReadStream(null, { fd: pipeHandle, autoClose: false });
-                        stream.on('data', (message) => processMessage(String(message).trim(), options.interfaces.fifo.protected, options));
+                        stream.on('data', (message) => processMessage(String(message).trim(), null, options.interfaces.fifo.protected, options));
                     });
                 }
             } catch(e) {
@@ -82,7 +82,7 @@ module.exports = function(app) {
                 const udpServer = dgram.createSocket('udp4');
                 udpServer.on('listening', () => {
                     log.N("UDP listener active on port " + options.interfaces.udp.port);
-                    udpServer.on('message', (message, rinfo) => processMessage(String(message).trim(), options.interfaces.udp.protected, options));
+                    udpServer.on('message', (message, rinfo) => processMessage(String(message).trim(), rinfo.address, options.interfaces.udp.protected, options));
                 });
                 udpServer.bind(options.interfaces.udp.port);
             } catch(e) {
@@ -97,7 +97,7 @@ module.exports = function(app) {
                 server.on('listening', () => {
                     log.N("TCP websocket listener active  on port " + options.interfaces.ws.port);
                     server.on('connection', (ws) => {
-                        ws.on('message', (message) => processMessage(String(message).trim(), options.interfaces.ws.protected, options));
+                        ws.on('message', (message) => processMessage(String(message).trim(), ws._socket.remoteAddress, options.interfaces.ws.protected, options));
                     });
                 });
 		    } catch(e) {
@@ -115,7 +115,7 @@ module.exports = function(app) {
     /**
      * Parses a message of the form "password@key:state:methods description".
      */
-    function processMessage(message, checkPassword, options) {
+    function processMessage(message, clientAddress, checkPassword, options) {
         if (DEBUG) log.N("processMessage(" + message + "," + JSON.stringify(options) + ")...", false);
 
         var password = null;
@@ -136,31 +136,55 @@ module.exports = function(app) {
         if (parts.length > 2) methods = parts[2].trim().split(',');
 
         if (key) {
-            let proceed = false;
-            if (checkPassword) {
-                if (password) proceed = options.security.passwords.split(" ").includes(password);
-            } else {
-                proceed = true;
-            }
-            if (proceed) {
-                if ((key = getCanonicalKey(key, options.notification.defaultpath)) !== null) {
-                    if (state.match(/on/i)) state = 'alert';
-                    if (state.match(/off/i)) state = null;
-                    if (state) {
-                        log.N("issuing " + state + " notification on " + key);
-                        notification.issue(key, description, { "state": state, "method": methods });
+            if (checkClientAddress(clientAddress, options.security.clients)) {
+                if ((!checkPassword) || ((checkPassword) && (password) && options.security.passwords.split(" ").includes(password))) {
+                    if ((key = getCanonicalKey(key, options.notification.defaultpath)) !== null) {
+                        if (state.match(/on/i)) state = 'alert';
+                        if (state.match(/off/i)) state = null;
+                        if (state) {
+                            log.N("issuing " + state + " notification on " + key);
+                            notification.issue(key, description, { "state": state, "method": methods });
+                        } else {
+                            log.N("cancelling notification on " + key);
+                            notification.cancel(key);
+                        }
                     } else {
-                        log.N("cancelling notification on " + key);
-                        notification.cancel(key);
+                        log.E("ignoring malformed request: " + message);
                     }
                 } else {
-                    log.E("ignoring malformed request: " + message);
+                    log.N("rejecting request (password authenticaton failed)");
                 }
             } else {
-                log.N("request could not be authenticated");
+                log.N("rejecting request (unauthorised client IP address)");
             }
         } else {
             log.N("ignoring malformed request: " + message);
+        }
+    }
+
+    function checkClientAddress(clientAddress, validAddressString) {
+        console.log("CLIENT ADDRESS " + clientAddress);
+        var retval = true;
+        if (clientAddress) {
+            retval = validAddressString.split(' ').reduce((a,va) => { return(compareIPs(va, clientAddress) || a); }, false);
+        }
+        return(retval);
+
+        function compareIPs(pattern, a) {
+            if (pattern.match(/^.+\..+\..+\..+$/) && a.match(/^.+\..+\..+\..+$/)) {
+                var pparts = pattern.split('.');
+                var aparts = a.split('.');
+                if ((pparts[0] == '*') || (pparts[0] == aparts[0])) {
+                    if ((pparts[1] == '*') || (pparts[1] == aparts[1])) {
+                        if ((pparts[2] == '*') || (pparts[2] == aparts[2])) {
+                            if ((pparts[3] == '*') || (pparts[3] == aparts[3])) {
+                                return(true);
+                            }
+                        }
+                    }
+                }
+            }
+            return(false);
         }
     }
 

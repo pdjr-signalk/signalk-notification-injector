@@ -66,10 +66,15 @@
             "title": "Security settings",
             "type": "object",
             "properties": {
+                "clients": {
+                    "title": "Allowed network client addresses",
+                    "type": "string",
+                    "default": "192.168.*.*"
+                },
 		        "passwords": {
 			        "title": "Access passwords",
 			        "type": "string",
-			        "default": ""
+			        "default": "letmein 0000"
                 }
             }
 		}

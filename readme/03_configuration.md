@@ -16,8 +16,8 @@ The plugin configuration properties are organised under three collapsible tabs.
 
 ### Service interfaces
 
-These properties define which, if any, of the possible plugin interfaces are
-enabled and provide configuration details for each interface.
+These settings define which, if any, of the implemented interfaces to the
+plugin are enabled and provides configuration details for each interface.
 
 #### FIFO named pipe
 
@@ -25,12 +25,12 @@ __Enabled?__ specifies whether or not to create and monitor a local named pipe.
 Required.
 Default is checked (create and monitor the named pipe).
 
-__Protected?__ specifies whether or not messages must include a password in
-order to use the named pipe interface.
+__Password protected?__ specifies whether or not messages to this interface
+must include a password in order to use the plugin.
 Required.
 Default is not checked (do not require a password).
 
-__Path__ defines the absolute path of the named pipe.
+__Pathname__ specifies the absolute filesystem path of the named pipe.
 Required.
 Default is '/var/signalk-injector'.
 
@@ -40,12 +40,12 @@ __Enabled?__ specifies whether or not to provide service on a local UDP port.
 Required.
 Default is not checked (do not provide a UDP service).
 
-__Protected?__ specifies whether or not messages must include a password in
-order to use the UDP interface.
+__Password protected?__ specifies whether or not messages to this interface
+must include a password in order to use the plugin.
 Required.
 Default is checked (require a password).
 
-__Port__ defines the UDP port number on which to listen for connections.
+__Port__ specifies the UDP port number on which to listen for connections.
 Required.
 Default is 6543.
 
@@ -56,53 +56,58 @@ local TCP port.
 Required.
 Default is not checked (do not provide a websocket service).
 
-__Protected?__ specifies whether or not messages must include a password in
-order to use the TCP interface.
+__Password protected?__ specifies whether or not messages to this interface
+must include a password in order to use the plugin.
 Required.
 Default is checked (require a password).
 
-__Port__ defines the TCP port number on which to listen for websocket
+__Port__ specifies the TCP port number on which to listen for websocket
 connections.
 Required.
 Default is 6543.
 
-### Notification defaults
+### Default notification properties
 
-These properties define what default values will be used by the plugin when it
+These settings define default values which will be used by the plugin when it
 constructs a notification from a received message.
-Setting defaults is a way of simplifying the content of most incoming messages.
+Setting defaults can be a way of simplifying the content of incoming messages.
 Defaults can always be over-ridden on a per-message basis.
 
-__Default path__ defines the root in the notifications tree where the plugin
-will place notifications which do not specify an absolute notification key
-(that is a key which begins with 'notifications...').
+__Default notification path__ specifies the root in the Signal K data  tree
+where the plugin will place notifications derived from messages which do not
+themselves specify an absolute notification key (that is a key which begins
+with 'notifications...').
 The supplied path must be absolute (i.e. must begin with 'notifications.').
 Required.
 Default is 'notifications.injector'.
 
-__Default state__ defines the value to be used for the notification state
-field if no state is specified in a message.
+__Default notification state__ specifies the value to be used for the
+state property of notifications derived from messages which do not themselves
+specify a notification state.
 Required.
 Default value is 'alert'.
 
-__Default method__ defines the values to be used for the notification method
-field if no values are specified in a message.
+__Default notification methods__ specifies the values to be used for thes
+method property of notifications derived from messages which do not
+themselves specify a notication method or methods.
 Required.
 The default value is to specify no methods.
 
-### Access security
+### Security settings
 
-These properties define whether or not a simple keyword-based security check
-should be applied to incoming messages.
+These settings configure the security measures which can be applied to the
+various plugin service interfaces.
 
-__Perform access check on__ defines which communication interfaces will have a
-security chcek applied to their incoming messages.
+__Allowed network client addresses__ specifies a space separated list of
+client IP addresses from which connections to the UDP and TCP interfaces will
+be accepted.
+The wildcard '\*' can be used in any part of an address.
 Required.
-Default is to apply security checks to all interfaces.
+The default value is '*.*.*.*' which allows connection from all clients.
 
-__Passwords__ defines a space separated collection of keywords, one of which
-must be included in messages presented to interfaces on which access checking
-is enabled.
+__Access passwords__ specifies a space separated collection of passwords,
+one of which must be included in messages presented to plugin interfaces on
+which password protection is enabled.
 Required.
-Default value is 'letmein 0000' and you should change this.  
+Default value is 'letmein 0000'.  
 

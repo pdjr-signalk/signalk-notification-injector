@@ -27,6 +27,8 @@
         "collapse": {
             "field": "ObjectField",
             "wrapClassName": "panel-group"
-        }
+        },
+        "clients": { },
+        "passwords": { }
     }
 }
