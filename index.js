@@ -163,7 +163,6 @@ module.exports = function(app) {
     }
 
     function checkClientAddress(clientAddress, validAddressString) {
-        console.log("CLIENT ADDRESS " + clientAddress);
         var retval = true;
         if (clientAddress) {
             retval = validAddressString.split(' ').reduce((a,va) => { return(compareIPs(va, clientAddress) || a); }, false);
