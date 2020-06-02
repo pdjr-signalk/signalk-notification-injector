@@ -32,6 +32,7 @@ conforming to the formatting constraints described below.
 Messages sent to the plugin must conform to one of the following patterns:
 
 [*password*__@__]*key*__[__:__[*state*][__:__[*method*]]] description
+
 [*password*__@__]*key*__:__{__off__|__cancel__}
 
 The first form is used to issue a notification, the second form to cancel

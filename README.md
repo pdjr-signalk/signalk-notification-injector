@@ -162,7 +162,7 @@ to one or other of the configured interfaces.
 
 Assuming that the default plugin configuration is unchanged, then the command:
 ```
-$> echo "test:alert This is a remotely injected test notification" > /var/signalk-injector
+$> echo "test:alert" > /var/signalk-injector
 ```
 will issue an 'alert' notification on the key ```notifications.injected.test```.
 
@@ -178,7 +178,8 @@ server address in a url of the following form and reviewing browser output.
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 ```
 
-The examples above are the minimum needed to trigger a plugin response.
+The examples above are an example of the minimum needed to trigger a plugin
+response.
 More generally, a message to the plugin must consist of a single line of text
 conforming to the formatting constraints described below.
 
@@ -187,6 +188,7 @@ conforming to the formatting constraints described below.
 Messages sent to the plugin must conform to one of the following patterns:
 
 [*password*__@__]*key*__[__:__[*state*][__:__[*method*]]] description
+
 [*password*__@__]*key*__:__{__off__|__cancel__}
 
 The first form is used to issue a notification, the second form to cancel
