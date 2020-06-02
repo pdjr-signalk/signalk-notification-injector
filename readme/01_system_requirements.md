@@ -1,4 +1,5 @@
 ## System requirements
 
-__signalk-notification-injector__ has no special system requirements that must
-be met prior to installation.
+__signalk-notification-injector__ requires that the node environment
+includes the 'ws' module.
+

@@ -31,8 +31,9 @@ server's notification state.
 
 ## System requirements
 
-__signalk-notification-injector__ has no special system requirements that must
-be met prior to installation.
+__signalk-notification-injector__ requires that the node environment
+includes the 'ws' module.
+
 ## Installation
 
 Download and install __signalk-notification-injector__ using the _Appstore_
@@ -43,7 +44,18 @@ and installed using
 ```
 $> cd ~/.signalk/node_modules
 $> git clone --install-submodules https://github.com/preeve9534/signalk-notification-injector.git
+$>
+$> systemctl restart signalk.service
 ```
+
+If the server complains about a missing 'ws' library required by this
+plugin, you can install a local copy with:
+```
+$> cd ~/.signalk/node_modules/signalk-notification-injector
+$> npm install ws
+$> systemctl restart signalk.service
+```
+
 ## Configuration
 
 __signalk-notification-injector__ is configured through the Signal K

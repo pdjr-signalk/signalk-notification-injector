@@ -8,4 +8,15 @@ and installed using
 ```
 $> cd ~/.signalk/node_modules
 $> git clone --install-submodules https://github.com/preeve9534/signalk-notification-injector.git
+$>
+$> systemctl restart signalk.service
 ```
+
+If the server complains about a missing 'ws' library required by this
+plugin, you can install a local copy with:
+```
+$> cd ~/.signalk/node_modules/signalk-notification-injector
+$> npm install ws
+$> systemctl restart signalk.service
+```
+
