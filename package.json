@@ -22,5 +22,9 @@
   "homepage": "https://github.com/preeve9534/signalk-notification-injector#readme",
   "dependencies": {
     "ws": "^7.3.0"
-  }
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "devDependencies": {}
 }

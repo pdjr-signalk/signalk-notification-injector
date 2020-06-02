@@ -1,5 +1,5 @@
 # Libraries
-lib/signalk-lib*
+#lib/signalk-lib*
 
 # Logs
 logs

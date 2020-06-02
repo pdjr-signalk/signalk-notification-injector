@@ -1,0 +1,9 @@
+[submodule "lib/signalk-liblog"]
+	path = lib/signalk-liblog
+	url = https://github.com/preeve9534/signalk-liblog.git
+[submodule "lib/signalk-libschema"]
+	path = lib/signalk-libschema
+	url = https://github.com/preeve9534/signalk-libschema.git
+[submodule "lib/signalk-libnotification"]
+	path = lib/signalk-libnotification
+	url = https://github.com/preeve9534/signalk-libnotification.git
