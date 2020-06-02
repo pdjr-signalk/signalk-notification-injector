@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+const dgram = require('dgram');
 const WebSocket = require('ws');
 const fs = require('fs');
 const child_process = require('child_process');
@@ -57,7 +58,7 @@ module.exports = function(app) {
 	plugin.start = function(options) {
         if (DEBUG) log.N("plugin.start(" + JSON.stringify(options) + ")...", false);
 
-        // Make local FIFO interface
+        // Make FIFO interface
         if (options.interfaces.fifo.enabled) {
 		    try {
                 if (!fs.existsSync(options.interfaces.fifo.path)) child_process.spawnSync('mkfifo', [ options.interfaces.fifo.path ]);
@@ -75,12 +76,26 @@ module.exports = function(app) {
             log.N("not starting FIFO interface (disabled by configuration)");
         }
 
-        // Make WebSocket server interface
+        // Make UDP interface
+        if (options.interfaces.udp.enabled) {
+            try {
+                const udpServer = dgram.createSocket('udp4');
+                udpServer.on('listening', () => {
+                    log.N("UDP listener active on port " + options.interfaces.udp.port);
+                    udpServer.on('message', (message, rinfo) => processMessage(String(message).trim(), options.interfaces.udp.protected, options));
+                });
+                udpServer.bind(options.interfaces.udp.port);
+            } catch(e) {
+                log.N("not starting UDP interface (disabled by configuration)");
+            }
+        }
+
+        // Make TCP websocket interface
         if (options.interfaces.ws.enabled) {
             try {
                 const server = new WebSocket.Server({ port: options.interfaces.ws.port });
                 server.on('listening', () => {
-                    log.N("WebSocket listener active  on port " + options.interfaces.ws.port);
+                    log.N("TCP websocket listener active  on port " + options.interfaces.ws.port);
                     server.on('connection', (ws) => {
                         ws.on('message', (message) => processMessage(String(message).trim(), options.interfaces.ws.protected, options));
                     });
@@ -109,7 +124,7 @@ module.exports = function(app) {
         var methods = options.notification.defaultmethods;
         var description = "";
 
-        var parts = message.split(' ');
+        var parts = message.split(' ', 2);
         // Get description
         if (parts.length > 1) description = parts[1].trim();
         // Get password

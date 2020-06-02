@@ -4,25 +4,27 @@ Once __signalk-notification-injector__ is configured and activated, you can
 inject a notification into the Signal K notification tree by writing a message
 to one or other of the configured interfaces.
 
-If the FIFO interface is enabled on its default path, then:
+Assuming that the default plugin configuration is unchanged, then the command:
 ```
-$> echo "letmein@:test:on This is a remotely injected test notification" > /var/signalk-injector
+$> echo "test:alert This is a remotely injected test notification" > /var/signalk-injector
 ```
 will issue an 'alert' notification on the key ```notifications.injected.test```.
 
-This notification can be cancelled (in fact, deleted) by:
+Similarly, the command:
 ```
-$> echo "letmein@test:off" > /var/signalk-injector
+$> echo "letmein@test:cancel" > /var/signalk-injector
 ```
+will cancel this notification.
 
 You can check this behaviour on your Signal K server by substituting your
-server address in a url of the form:
+server address in a url of the following form and reviewing browser output.
 ```
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 ```
 
-A message to the plugin must consist of a single line of text conforming to
-the formatting constraints described below.
+The examples above are the minimum needed to trigger a plugin response.
+More generally, a message to the plugin must consist of a single line of text
+conforming to the formatting constraints described below.
 
 ### Message format
 
@@ -34,11 +36,11 @@ Messages sent to the plugin must conform to one of the following patterns:
 The first form is used to issue a notification, the second form to cancel
 (or delete) any existing notification.
 
-If the interface being used to deliver the message is configured as protected,
-then _password_ must be supplied and it must have a value which is defined in
-the plugin's list of security keywords for notification generation to be
-permitted.
-If the interface being used is not protected, then *password* is optional and
+The optional _password_ field is required if the interface used to deliver
+the message has its _Protected?_ configuration property enabled.
+In this case, messages will only be processed if the supplied _password_ has a
+value which is defined in the plugin's list of security keywords.
+If the interface being used is not protected, then _password_ is optional and
 if a value is supplied it will be discarded.
 
 _key_ is the notification key to which the message applies and it should

@@ -15,8 +15,17 @@
                         "path": { "title": "Pathname", "type": "string", "default": "/var/signalk-injector" }
                     }
                 },
+                "udp": {
+                    "title": "UDP port",
+                    "type": "object",
+                    "properties": {
+                        "enabled": { "title": "Enabled?", "type": "boolean", "default": false },
+                        "protected": { "title": "Password protected?", "type": "boolean", "default": true },
+                        "port": { "title": "Port", "type": "number", "default": 6543 }
+                    }
+                },
                 "ws": {
-                    "title": "Websocket",
+                    "title": "TCP websocket",
                     "type": "object",
                     "properties": {
                         "enabled": { "title": "Enabled?", "type": "boolean", "default": false },

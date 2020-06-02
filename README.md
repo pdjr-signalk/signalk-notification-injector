@@ -9,21 +9,21 @@ section of the Signal K documentation may provide helpful orientation.
 
 ## Principle of operation
 
-__signalk-notification-injector__ parses messages arriving on either a named
-pipe (FIFO) or a websocket port into keys in the Signal K  host server's
+__signalk-notification-injector__ parses messages arriving on a named pipe
+(FIFO), UDP port or a TCP websocket into keys in the Signal K  host server's
 ```vessels.self.notifications``` tree.
 
 Messages are single lines of text which conform to some simple formatting and
 security rules.
 
-Any process which is able to write to the named pipe has access to the
-injection process and creating a notification can be as simple as:
+Processes on the Signal K host which are able to write to the named pipe have
+access to the injector and creating a notification can be as simple as:
 ```
 $> echo "letmein@heating:on" > /var/signalk-injector
 ```
 
-Remote processes or applications can achieve the same result by making a
-WebSocket connection.
+Remote processes or network applications can achieve the same result by either
+writing to the injector's UDP port or by making a TCP websocket connection.
 
 Signal K places no arbitrary restrictions on the semantics of notification keys
 and it is a straightforward task to implement plugins which react to the
@@ -61,23 +61,51 @@ The plugin configuration properties are organised under three collapsible tabs.
 
 These properties define which, if any, of the possible plugin interfaces are
 enabled and provide configuration details for each interface.
-There are two sub-sections.
 
-__FIFO named pipe -> Enabled?__ defines whether or not the local named pipe
-will be monitored by the plugin.
+#### FIFO named pipe
+
+__Enabled?__ specifies whether or not to create and monitor a local named pipe.
 Required.
-Default is checked (monitor the named pipe).
+Default is checked (create and monitor the named pipe).
 
-__FIFO named pipe -> Path__ defines the absolute path of the named pipe.
+__Protected?__ specifies whether or not messages must include a password in
+order to use the named pipe interface.
+Required.
+Default is not checked (do not require a password).
+
+__Path__ defines the absolute path of the named pipe.
 Required.
 Default is '/var/signalk-injector'.
 
-__WebSocket -> Enabled?__ defines whether or not the plugin will accept TCP
-websocket connections. 
-Required.
-Default is un-checked (do not accept websocket connections).
+#### UDP port
 
-__Websocket -> Port__ defines the port number on which the plugin will listen.
+__Enabled?__ specifies whether or not to provide service on a local UDP port.
+Required.
+Default is not checked (do not provide a UDP service).
+
+__Protected?__ specifies whether or not messages must include a password in
+order to use the UDP interface.
+Required.
+Default is checked (require a password).
+
+__Port__ defines the UDP port number on which to listen for connections.
+Required.
+Default is 6543.
+
+#### TCP websocket
+
+__Enabled?__ specifies whether or not to provide a websocket service on a
+local TCP port.
+Required.
+Default is not checked (do not provide a websocket service).
+
+__Protected?__ specifies whether or not messages must include a password in
+order to use the TCP interface.
+Required.
+Default is checked (require a password).
+
+__Port__ defines the TCP port number on which to listen for websocket
+connections.
 Required.
 Default is 6543.
 
@@ -127,25 +155,27 @@ Once __signalk-notification-injector__ is configured and activated, you can
 inject a notification into the Signal K notification tree by writing a message
 to one or other of the configured interfaces.
 
-If the FIFO interface is enabled on its default path, then:
+Assuming that the default plugin configuration is unchanged, then the command:
 ```
-$> echo "letmein@:test:on This is a remotely injected test notification" > /var/signalk-injector
+$> echo "test:alert This is a remotely injected test notification" > /var/signalk-injector
 ```
 will issue an 'alert' notification on the key ```notifications.injected.test```.
 
-This notification can be cancelled (in fact, deleted) by:
+Similarly, the command:
 ```
-$> echo "letmein@test:off" > /var/signalk-injector
+$> echo "letmein@test:cancel" > /var/signalk-injector
 ```
+will cancel this notification.
 
 You can check this behaviour on your Signal K server by substituting your
-server address in a url of the form:
+server address in a url of the following form and reviewing browser output.
 ```
 http://192.168.1.1:3000/signalk/v1/api/vessels/self/notifications/injected/
 ```
 
-A message to the plugin must consist of a single line of text conforming to
-the formatting constraints described below.
+The examples above are the minimum needed to trigger a plugin response.
+More generally, a message to the plugin must consist of a single line of text
+conforming to the formatting constraints described below.
 
 ### Message format
 
@@ -157,11 +187,11 @@ Messages sent to the plugin must conform to one of the following patterns:
 The first form is used to issue a notification, the second form to cancel
 (or delete) any existing notification.
 
-If the interface being used to deliver the message is configured as protected,
-then _password_ must be supplied and it must have a value which is defined in
-the plugin's list of security keywords for notification generation to be
-permitted.
-If the interface being used is not protected, then *password* is optional and
+The optional _password_ field is required if the interface used to deliver
+the message has its _Protected?_ configuration property enabled.
+In this case, messages will only be processed if the supplied _password_ has a
+value which is defined in the plugin's list of security keywords.
+If the interface being used is not protected, then _password_ is optional and
 if a value is supplied it will be discarded.
 
 _key_ is the notification key to which the message applies and it should

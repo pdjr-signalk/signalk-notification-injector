@@ -18,23 +18,51 @@ The plugin configuration properties are organised under three collapsible tabs.
 
 These properties define which, if any, of the possible plugin interfaces are
 enabled and provide configuration details for each interface.
-There are two sub-sections.
 
-__FIFO named pipe -> Enabled?__ defines whether or not the local named pipe
-will be monitored by the plugin.
+#### FIFO named pipe
+
+__Enabled?__ specifies whether or not to create and monitor a local named pipe.
 Required.
-Default is checked (monitor the named pipe).
+Default is checked (create and monitor the named pipe).
 
-__FIFO named pipe -> Path__ defines the absolute path of the named pipe.
+__Protected?__ specifies whether or not messages must include a password in
+order to use the named pipe interface.
+Required.
+Default is not checked (do not require a password).
+
+__Path__ defines the absolute path of the named pipe.
 Required.
 Default is '/var/signalk-injector'.
 
-__WebSocket -> Enabled?__ defines whether or not the plugin will accept TCP
-websocket connections. 
-Required.
-Default is un-checked (do not accept websocket connections).
+#### UDP port
 
-__Websocket -> Port__ defines the port number on which the plugin will listen.
+__Enabled?__ specifies whether or not to provide service on a local UDP port.
+Required.
+Default is not checked (do not provide a UDP service).
+
+__Protected?__ specifies whether or not messages must include a password in
+order to use the UDP interface.
+Required.
+Default is checked (require a password).
+
+__Port__ defines the UDP port number on which to listen for connections.
+Required.
+Default is 6543.
+
+#### TCP websocket
+
+__Enabled?__ specifies whether or not to provide a websocket service on a
+local TCP port.
+Required.
+Default is not checked (do not provide a websocket service).
+
+__Protected?__ specifies whether or not messages must include a password in
+order to use the TCP interface.
+Required.
+Default is checked (require a password).
+
+__Port__ defines the TCP port number on which to listen for websocket
+connections.
 Required.
 Default is 6543.
 
