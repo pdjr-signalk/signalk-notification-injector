@@ -40,7 +40,10 @@ link in your Signal K Node server console.
 The plugin can also be obtained from the 
 [project homepage](https://github.com/preeve9534/signalk-notification-injector)
 and installed using
-[these instructions](https://github.com/SignalK/signalk-server-node/blob/master/SERVERPLUGINS.md).
+```
+$> cd ~/.signalk/node_modules
+$> git clone --install-submodules https://github.com/preeve9534/signalk-notification-injector.git
+```
 ## Configuration
 
 __signalk-notification-injector__ is configured through the Signal K
