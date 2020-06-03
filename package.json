@@ -1,6 +1,6 @@
 {
   "name": "signalk-notification-injector",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Insert a notification into Signal K",
   "main": "index.js",
   "scripts": {
