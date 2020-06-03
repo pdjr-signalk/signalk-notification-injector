@@ -173,7 +173,8 @@ The wildcard '\*' can be used in any part of an address.
 Required.
 Default value is '127.0.0.1' which will only allow access from the Signal K
 host.
-You should change this to reflect your local requirement.
+You should change this to reflect your local requirement: something like
+'127.0.0.1 192.168.\*.\*' will satisfy most use cases.
 
 __Access passwords__ specifies a space separated collection of passwords,
 one of which must be included in messages presented to plugin interfaces on
