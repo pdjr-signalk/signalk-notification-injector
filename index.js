@@ -34,7 +34,7 @@ module.exports = function(app) {
 	plugin.name = "Notification injector";
 	plugin.description = "Inject notifications into the Signal K alert tree";
 
-    const log = new Log(app.setProviderStatus, app.setProviderError, plugin.id);
+    const log = new Log(plugin.id, { ncallback: app.setProviderStatus, ecallback: app.setProviderError });
     const notification = new Notification(app, plugin.id);
 
     /**
