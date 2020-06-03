@@ -69,7 +69,7 @@
                 "clients": {
                     "title": "Allowed network client addresses",
                     "type": "string",
-                    "default": "192.168.*.*"
+                    "default": "127.0.0.1"
                 },
 		        "passwords": {
 			        "title": "Access passwords",
