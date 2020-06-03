@@ -23,7 +23,7 @@ $> systemctl restart signalk.service
 
 I have seen occasions where an installation triggered by the Signal K
 _Appstore_ link fails to recover all the required submodules.
-If youe get complaints about missing libraries in the plugin's ```lib/```
+If you get complaints about missing libraries in the plugin's ```lib/```
 directory, then you can correct this with:
 ```
 $> cd ~/.signalk/node_modules/signalk-notification-injector
