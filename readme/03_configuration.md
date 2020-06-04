@@ -115,3 +115,39 @@ Required.
 Default value is 'letmein 0000'.  
 You may want to change this to reflect your local requirement.
 
+### Production example
+
+The configuration used on my production system looks like this.
+```
+{
+  "enabled": true,
+  "enableLogging": false,
+  "configuration": {
+    "interfaces": {
+      "fifo": {
+        "enabled": true,
+        "protected": false,
+        "path": "/var/signalk-injector"
+      },
+      "udp": {
+        "enabled": true,
+        "protected": true,
+        "port": 6543
+      },
+      "ws": {
+        "enabled": true,
+        "protected": true,
+        "port": 6543
+      }
+    },
+    "notification": {
+      "defaultpath": "notifications.injected",
+      "defaultstate": "alert",
+      "defaultmethods": []
+    },
+    "security": {
+      "clients": "127.0.0.1 192.168.1.*",
+      "passwords": "flashbang 1958 447786123456"
+    }
+  }
+}

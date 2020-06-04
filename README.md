@@ -22,10 +22,10 @@ $> echo "heating:alert Heating system fuel level < 10%" > /var/signalk-injector
 
 Remote processes or network applications can achieve the same result by 
 writing to the injector's UDP port or by making a TCP websocket connection.
-For example, on a remote Linux client, the bash(1) shell allows something like
-this.
+For example, on a remote Linux client, the something like this could be used
+to send a message to the plugin's UDP interface.
 ```
-$> echo "heating:alert Heating system fuel level < 10%" > /dev/udp/192.168.1.1:6543
+$> echo "letmein@heating:alert Heating system fuel level < 10%" > /dev/udp/192.168.1.1:6543
 ```
 ## System requirements
 
@@ -179,6 +179,42 @@ Required.
 Default value is 'letmein 0000'.  
 You may want to change this to reflect your local requirement.
 
+### Production example
+
+The configuration used on my production system looks like this.
+```
+{
+  "enabled": true,
+  "enableLogging": false,
+  "configuration": {
+    "interfaces": {
+      "fifo": {
+        "enabled": true,
+        "protected": false,
+        "path": "/var/signalk-injector"
+      },
+      "udp": {
+        "enabled": true,
+        "protected": true,
+        "port": 6543
+      },
+      "ws": {
+        "enabled": true,
+        "protected": true,
+        "port": 6543
+      }
+    },
+    "notification": {
+      "defaultpath": "notifications.injected",
+      "defaultstate": "alert",
+      "defaultmethods": []
+    },
+    "security": {
+      "clients": "127.0.0.1 192.168.1.*",
+      "passwords": "flashbang 1958 447786123456"
+    }
+  }
+}
 ## Usage
 
 Once __signalk-notification-injector__ is configured and activated, you can
