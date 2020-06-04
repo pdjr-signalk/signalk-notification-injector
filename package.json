@@ -1,7 +1,7 @@
 {
   "name": "signalk-notification-injector",
   "version": "2.0.0",
-  "description": "Insert a notification into Signal K",
+  "description": "Signal K notification tree message interface.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,9 +12,13 @@
   },
   "keywords": [
     "signalk-node-server-plugin",
-    "notification"
+    "notification-injector",
+    "notification",
+    "message",
+    "interface",
+    "pdjr"
   ],
-  "author": "Paul Reeve <paul@pdjr.eu>",
+  "author": "Paul Reeve <preeve@pdjr.eu>",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/preeve9534/signalk-notification-injector/issues"

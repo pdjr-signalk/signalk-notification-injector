@@ -1,6 +1,6 @@
 # signalk-notification-injector
 
-Insert arbitrary keys into a Signal K notification tree.
+Signal K notification tree message interface.
 
 This project implements a plugin for the [Signal K Node server](https://github.com/SignalK/signalk-server-node).
 
