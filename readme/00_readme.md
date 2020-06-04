@@ -22,8 +22,8 @@ $> echo "heating:alert Heating system fuel level < 10%" > /var/signalk-injector
 
 Remote processes or network applications can achieve the same result by 
 writing to the injector's UDP port or by making a TCP websocket connection.
-For example, on a remote Linux client, the something like this could be used
-to send a message to the plugin's UDP interface.
+For example, on a remote Linux client, something like this could be used to
+send a message to the plugin's UDP interface.
 ```
 $> echo "letmein@heating:alert Heating system fuel level < 10%" > /dev/udp/192.168.1.1:6543
 ```
